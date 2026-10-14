@@ -3,6 +3,7 @@ import { Select, Slider, Toggle } from "../../components/fields";
 import type { Settings, Theme } from "../../core/settings";
 import { patchSection } from "../../app/useSettings";
 import { inTauri } from "../../services/env";
+import { revealLogFile } from "../../services/log";
 import { resetSettings, updateSettings } from "../../services/settings-store";
 
 export function GeneralSettings({ settings }: { settings: Settings }) {
@@ -83,6 +84,22 @@ export function GeneralSettings({ settings }: { settings: Settings }) {
             Clear recent scripts
           </button>
         </div>
+      </fieldset>
+      <fieldset className="fieldset">
+        <legend>Troubleshooting</legend>
+        <Toggle
+          label="Write debug logs"
+          checked={settings.debugLogs}
+          onChange={(v) => set({ debugLogs: v })}
+          hint="Saves app events and errors to a local file you can attach to a bug report. Never includes script text, transcripts or audio."
+        />
+        {inTauri && (
+          <div className="row">
+            <button onClick={() => void revealLogFile().catch(() => undefined)}>
+              Show log file
+            </button>
+          </div>
+        )}
       </fieldset>
       <fieldset className="fieldset">
         <legend>Reset</legend>

@@ -75,4 +75,4 @@ body:
     id: extra
     attributes:
       label: Anything else?
-      description: Screenshots, microphone model, display setup (number of monitors, scaling), error messages.
+      description: Screenshots, microphone model, display setup (number of monitors, scaling), error messages, and `seeread.log` if you turned on Settings → General → Write debug logs.

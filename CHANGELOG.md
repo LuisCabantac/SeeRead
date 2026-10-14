@@ -11,9 +11,16 @@ All notable changes to SeeRead are documented here. The format follows
 - Settings detects Wayland sessions and explains that display choice, always-on-top and global
   shortcuts are limited there, with KDE Plasma instructions for keeping the teleprompter on top.
 
+### Added
+
+- Opt-in debug logs (Settings → General → Troubleshooting) that record app events, errors and crashes
+  to a local file for bug reports, never script text, transcripts or audio (#3).
+
 ### Fixed
 
 - On Wayland, the teleprompter no longer saves a meaningless 0,0 position; only its size is restored.
+- The microphone test and voice tracking no longer close SeeRead a few seconds after starting when
+  the microphone runs at a rate other than 16 kHz (#3).
 
 ## [0.1.0] - 2026-10-14
 

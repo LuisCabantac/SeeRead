@@ -16,6 +16,7 @@ export interface Settings {
   firstRunComplete: boolean;
   theme: Theme;
   highContrast: boolean;
+  debugLogs: boolean;
   reducedMotion: "system" | "on" | "off";
   mode: ReadingMode;
   appearance: {
@@ -94,6 +95,7 @@ export const DEFAULT_SETTINGS: Settings = {
   firstRunComplete: false,
   theme: "system",
   highContrast: false,
+  debugLogs: false,
   reducedMotion: "system",
   mode: "auto",
   appearance: {
