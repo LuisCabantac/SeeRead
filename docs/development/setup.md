@@ -77,6 +77,9 @@ cargo deny check         # advisories, licenses, sources (install: cargo install
 
 - **`LNK2038`/`LNK4098` runtime-library mismatch on Windows:** make sure you build from `src-tauri`
   so `.cargo/config.toml` applies (`+crt-static`).
+- **`could not find native static library sherpa-onnx-c-api`:** the downloaded libraries in
+  `src-tauri/target/sherpa-onnx-prebuilt/` were removed but Cargo still has the build-script results.
+  Run `cargo clean -p sherpa-onnx-sys` in `src-tauri/` to download them again.
 - **Files locked during builds on OneDrive/Dropbox folders:** exclude `node_modules/` and
   `src-tauri/target/` from sync, or set `CARGO_TARGET_DIR` to a folder outside the synced tree.
 - **Linux: the overlay isn't transparent or on top:** this depends on your compositor; see
