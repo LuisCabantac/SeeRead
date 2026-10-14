@@ -54,8 +54,8 @@ jobs:
     name: Build (${{ matrix.name }})
     needs: [validate, ci]
     # Signing secrets live in the protected `release` environment and are never
-    # available to pull-request workflows.
-    environment: release
+    # available to pull-request workflows. Dry runs build unsigned, outside it.
+    environment: ${{ github.event_name == 'push' && 'release' || '' }}
     permissions:
       contents: read
     strategy:
