@@ -8,6 +8,7 @@ import { useScriptModel } from "../features/teleprompter/model";
 import { on, send } from "../services/bus";
 import { inTauri, isMac } from "../services/env";
 import { EVENTS, type OverlayCommand } from "../services/overlay";
+import { displaySession } from "../services/session";
 import { updateSettings } from "../services/settings-store";
 import { usePlayback } from "./usePlayback";
 
@@ -50,7 +51,8 @@ export function OverlayApp() {
     void send("main", EVENTS.status, status);
   }, [status]);
 
-  // Remember where the reader put the overlay (physical pixels, per monitor).
+  // Remember where the reader put the overlay (physical pixels, per monitor), or just its
+  // size where the compositor decides positions.
   useEffect(() => {
     if (!inTauri) return;
     const win = getCurrentWindow();
@@ -59,18 +61,30 @@ export function OverlayApp() {
       clearTimeout(timer);
       timer = setTimeout(async () => {
         if (await win.isFullscreen()) return;
-        const [pos, size, monitor] = await Promise.all([
+        const [pos, size, monitor, session] = await Promise.all([
           win.outerPosition(),
           win.outerSize(),
           currentMonitor(),
+          displaySession(),
         ]);
+        // Wayland reports every window at 0,0, so only the size means anything there.
         await updateSettings((s) => ({
           ...s,
-          overlay: {
-            ...s.overlay,
-            monitor: monitor?.name ?? s.overlay.monitor,
-            bounds: { x: pos.x, y: pos.y, width: size.width, height: size.height },
-          },
+          overlay: session.windowPositioning
+            ? {
+                ...s.overlay,
+                monitor: monitor?.name ?? s.overlay.monitor,
+                bounds: { x: pos.x, y: pos.y, width: size.width, height: size.height },
+              }
+            : {
+                ...s.overlay,
+                bounds: {
+                  x: s.overlay.bounds?.x ?? 0,
+                  y: s.overlay.bounds?.y ?? 0,
+                  width: size.width,
+                  height: size.height,
+                },
+              },
         }));
       }, 600);
     };

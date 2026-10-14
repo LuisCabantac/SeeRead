@@ -119,12 +119,12 @@ In the teleprompter window: **Space** start/pause · **↑/↓** speed · **←/
 SeeRead can ask the operating system to leave the teleprompter out of screenshots, recordings and screen
 sharing (Settings → Privacy & capture). The setting shows what the OS actually reports back.
 
-| Platform              | Mechanism                                          | What to expect                                                              |
-| --------------------- | -------------------------------------------------- | --------------------------------------------------------------------------- |
-| Windows 10 2004+ / 11 | `SetWindowDisplayAffinity(WDA_EXCLUDEFROMCAPTURE)` | Hidden from most capture and sharing tools.                                 |
-| Older Windows 10      | `WDA_MONITOR`                                      | Appears as a black rectangle instead.                                       |
-| macOS                 | `NSWindow.sharingType = .none`                     | Best effort: ScreenCaptureKit-based tools (macOS 15+) may still capture it. |
-| Linux (X11 / Wayland) | none available                                     | Not supported: the teleprompter appears in captures.                        |
+| Platform              | Mechanism                                          | What to expect                                                                                                      |
+| --------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Windows 10 2004+ / 11 | `SetWindowDisplayAffinity(WDA_EXCLUDEFROMCAPTURE)` | Hidden from most capture and sharing tools.                                                                         |
+| Older Windows 10      | `WDA_MONITOR`                                      | Appears as a black rectangle instead.                                                                               |
+| macOS                 | `NSWindow.sharingType = .none`                     | Best effort: ScreenCaptureKit-based tools (macOS 15+) may still capture it.                                         |
+| Linux (X11 / Wayland) | none available                                     | Not supported: the teleprompter appears in captures. On Wayland, share a single window instead of the whole screen. |
 
 **This is never a guarantee.** Cameras filming the screen, remote-desktop sessions, privileged or
 driver-level capture, browser-based screen sharing, compositors and OS updates can all still capture
@@ -152,9 +152,13 @@ Verification details: [docs/platform-support.md](docs/platform-support.md).
 | Screen-capture exclusion              |   ✅⁴   |  🟠   |  ⛔   |
 | Remote speech recognition             |   ⛔    |  ⛔   |  ⛔   |
 
-¹ Depends on the compositor; some Wayland sessions ignore always-on-top and input pass-through.
+¹ Depends on the compositor. Wayland decides window placement and stacking itself, so SeeRead
+only restores the teleprompter's size there, and always-on-top may be ignored (in KDE Plasma, use
+<kbd>Alt+F3</kbd> → More Actions → Keep Above Others, or a window rule). Settings explains what your
+session allows.
 ² Checked by the `speech` CI job on Ubuntu with public LibriSpeech recordings.
-³ Global shortcuts require X11 (or XWayland); native Wayland sessions do not allow them.
+³ Global shortcuts require X11 (or XWayland); native Wayland sessions do not allow them, and
+Settings → Keyboard shortcuts says so when it detects Wayland.
 ⁴ OS read-back and a GDI screen capture confirmed exclusion; specific recording/meeting apps not yet tried.
 
 ## Privacy

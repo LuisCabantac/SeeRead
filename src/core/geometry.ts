@@ -74,3 +74,21 @@ export function placeOverlay(
   const monitor = monitors.find((m) => m.name === preferred) ?? monitors[0]!;
   return { bounds: defaultBounds(monitor.rect), monitor };
 }
+
+/**
+ * For sessions where the compositor places windows (Wayland), only the size is ours to
+ * restore: the saved size if any, else the default, fitted to the preferred monitor.
+ */
+export function overlaySize(
+  monitors: MonitorInfo[],
+  preferred: string | null,
+  saved: Rect | null,
+): { width: number; height: number } {
+  const monitor = monitors.find((m) => m.name === preferred) ?? monitors[0];
+  if (!monitor) return { width: saved?.width ?? 900, height: saved?.height ?? 320 };
+  const { x, y } = monitor.rect;
+  const { width, height } = saved
+    ? clampToMonitor({ ...saved, x, y }, monitor.rect)
+    : defaultBounds(monitor.rect);
+  return { width, height };
+}

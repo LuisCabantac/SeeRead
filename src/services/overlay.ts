@@ -9,11 +9,12 @@ import {
   PhysicalSize,
   primaryMonitor,
 } from "@tauri-apps/api/window";
-import { placeOverlay, type MonitorInfo } from "../core/geometry";
+import { overlaySize, placeOverlay, type MonitorInfo } from "../core/geometry";
 import type { TrackerStatus } from "../core/matcher";
 import type { ReadingMode, Settings } from "../core/settings";
 import { setCaptureExclusion, type CaptureStatus } from "./capture";
 import { inTauri } from "./env";
+import { displaySession } from "./session";
 
 export const EVENTS = {
   /** main → overlay: the script text to display. */
@@ -84,15 +85,21 @@ export async function listMonitors(): Promise<MonitorInfo[]> {
   }));
 }
 
-/** Moves the overlay onto a connected monitor, restoring saved bounds when still valid. */
+/**
+ * Moves the overlay onto a connected monitor, restoring saved bounds when still valid.
+ * Where the compositor places windows itself (Wayland), only the size is restored.
+ */
 export async function placeOverlayWindow(settings: Settings): Promise<void> {
   const win = await overlayWindow();
   if (!win) return;
-  const { bounds } = placeOverlay(
-    await listMonitors(),
-    settings.overlay.monitor,
-    settings.overlay.bounds,
-  );
+  const monitors = await listMonitors();
+  const { monitor, bounds: saved } = settings.overlay;
+  if (!(await displaySession()).windowPositioning) {
+    const size = overlaySize(monitors, monitor, saved);
+    await win.setSize(new PhysicalSize(size.width, size.height));
+    return;
+  }
+  const { bounds } = placeOverlay(monitors, monitor, saved);
   await win.setSize(new PhysicalSize(bounds.width, bounds.height));
   await win.setPosition(new PhysicalPosition(bounds.x, bounds.y));
 }

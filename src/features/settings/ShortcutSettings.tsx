@@ -6,6 +6,7 @@ import {
   findConflicts,
   isSafeGlobalShortcut,
 } from "../../core/shortcuts";
+import { useDisplaySession } from "../../app/useDisplaySession";
 import { patchSection } from "../../app/useSettings";
 import { isMac } from "../../services/env";
 import type { ShortcutAction } from "../../services/global-shortcuts";
@@ -37,6 +38,7 @@ export function ShortcutSettings({
   settings: Settings;
   failures: ShortcutAction[];
 }) {
+  const session = useDisplaySession();
   const [recording, setRecording] = useState<ShortcutAction | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
   const bindings = settings.shortcuts;
@@ -60,9 +62,17 @@ export function ShortcutSettings({
   return (
     <>
       <h2>Keyboard shortcuts</h2>
-      <p className="muted">
-        Global shortcuts work even when another app — such as your video call — has focus.
-      </p>
+      {session.globalShortcuts ? (
+        <p className="muted">
+          Global shortcuts work even when another app — such as your video call — has focus.
+        </p>
+      ) : (
+        <p className="notice warn" role="status">
+          Your desktop runs Wayland, which doesn’t let apps listen for keys system-wide, so these
+          shortcuts won’t fire. Use the keys under “In the teleprompter window” while it has focus,
+          or the SeeRead tray menu.
+        </p>
+      )}
       {warning && (
         <p className="notice warn" role="alert">
           {warning}

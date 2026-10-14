@@ -1,5 +1,6 @@
 mod capture_exclusion;
 mod error;
+mod session;
 mod speech;
 mod storage;
 
@@ -128,6 +129,7 @@ pub fn run() {
             speech::start_speech,
             speech::stop_speech,
             capture_exclusion::set_capture_exclusion,
+            session::display_session,
             set_debug_logging,
         ])
         .run(tauri::generate_context!())

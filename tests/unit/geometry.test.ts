@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { clampToMonitor, placeOverlay, type MonitorInfo } from "../../src/core/geometry";
+import {
+  clampToMonitor,
+  overlaySize,
+  placeOverlay,
+  type MonitorInfo,
+} from "../../src/core/geometry";
 
 const primary: MonitorInfo = {
   name: "A",
@@ -52,5 +57,22 @@ describe("overlay placement", () => {
 
   it("copes with no monitor information", () => {
     expect(placeOverlay([], null, null).monitor).toBeNull();
+  });
+});
+
+describe("overlay size where the compositor places windows", () => {
+  it("keeps the saved size, ignoring the meaningless saved position", () => {
+    const saved = { x: 0, y: 0, width: 1000, height: 400 };
+    expect(overlaySize([primary, hidpi], "B", saved)).toEqual({ width: 1000, height: 400 });
+  });
+
+  it("fits the saved size to the preferred monitor", () => {
+    const saved = { x: 0, y: 0, width: 3000, height: 50 };
+    expect(overlaySize([primary, hidpi], null, saved)).toEqual({ width: 1920, height: 120 });
+  });
+
+  it("uses the default size without saved bounds or monitors", () => {
+    expect(overlaySize([primary], null, null)).toEqual({ width: 1344, height: 312 });
+    expect(overlaySize([], null, null)).toEqual({ width: 900, height: 320 });
   });
 });
