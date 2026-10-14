@@ -83,12 +83,13 @@ export function Welcome({ onDone }: { onDone(): void }) {
             To get control back,{" "}
             {session.globalShortcuts ? (
               <>
-                press <kbd>{displayAccelerator(settings.shortcuts.toggleClickThrough, isMac)}</kbd>{" "}
-                or use the SeeRead tray menu.
+                press <kbd>{displayAccelerator(settings.shortcuts.toggleClickThrough, isMac)}</kbd>,
+                use the SeeRead tray menu,
               </>
             ) : (
-              "use the SeeRead tray menu."
-            )}
+              "use the SeeRead tray menu"
+            )}{" "}
+            or the “Regain control” button in the main window.
           </p>
           <p>
             <strong>Screen capture:</strong> {CAPTURE_NOTE[platform]} No method can stop a camera
