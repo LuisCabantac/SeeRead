@@ -108,9 +108,11 @@ jobs:
         working-directory: src-tauri
         run: |
           # sherpa-onnx-sys downloads its static libraries into target/sherpa-onnx-prebuilt.
-          # rust-cache keeps the build-script results but prunes that folder, so force the
-          # build script to run (and download) again when the folder is missing.
-          if [ ! -d target/sherpa-onnx-prebuilt ]; then cargo clean -p sherpa-onnx-sys; fi
+          # rust-cache keeps the build-script results but prunes that folder's contents, so
+          # force the build script to run (and download) again when the libraries are gone.
+          if ! compgen -G "target/sherpa-onnx-prebuilt/*/lib" > /dev/null; then
+            cargo clean -p sherpa-onnx-sys
+          fi
       - name: Build the web UI (embedded by the Rust build)
         run: npm run build
       - name: rustfmt
@@ -161,9 +163,11 @@ jobs:
         working-directory: src-tauri
         run: |
           # sherpa-onnx-sys downloads its static libraries into target/sherpa-onnx-prebuilt.
-          # rust-cache keeps the build-script results but prunes that folder, so force the
-          # build script to run (and download) again when the folder is missing.
-          if [ ! -d target/sherpa-onnx-prebuilt ]; then cargo clean -p sherpa-onnx-sys; fi
+          # rust-cache keeps the build-script results but prunes that folder's contents, so
+          # force the build script to run (and download) again when the libraries are gone.
+          if ! compgen -G "target/sherpa-onnx-prebuilt/*/lib" > /dev/null; then
+            cargo clean -p sherpa-onnx-sys
+          fi
       - name: Recognize recorded speech
         working-directory: src-tauri
         run: cargo test --locked recognizes_recorded_speech -- --ignored --nocapture
