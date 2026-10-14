@@ -131,6 +131,9 @@ pub async fn list_models(app: AppHandle, extra_dirs: Vec<String>) -> Vec<ModelIn
         }
     }
     for dir in extra_dirs.into_iter().map(PathBuf::from) {
+        if found.iter().any(|(known, _, _)| known == &dir) {
+            continue; // the user picked a bundled model
+        }
         if let Some(files) = model_files(&dir) {
             found.push((dir, false, files));
         }
