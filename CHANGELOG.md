@@ -6,6 +6,11 @@ All notable changes to SeeRead are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- The microphone test and voice tracking no longer close SeeRead a few seconds after starting when
+  the microphone runs at a rate other than 16 kHz (#3).
+
 ## [0.1.0] - 2026-10-14
 
 ### Added

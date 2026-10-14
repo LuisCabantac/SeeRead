@@ -313,8 +313,10 @@ fn create_recognizer(files: &ModelFiles, use_hotwords: bool) -> Result<OnlineRec
 
 /// Streaming models spend their first ~0.5 s of input warming up, which would swallow
 /// the first word after every (re)start. Feeding a second of silence absorbs it.
-fn prime(recognizer: &OnlineRecognizer, asr: &sherpa_onnx::OnlineStream) {
-    asr.accept_waveform(16_000, &[0f32; 16_000]);
+/// It must use the microphone's rate: sherpa-onnx exits the process if one stream is
+/// fed two different rates, and `reset` keeps the stream's resampler.
+fn prime(recognizer: &OnlineRecognizer, asr: &sherpa_onnx::OnlineStream, sample_rate: u32) {
+    asr.accept_waveform(sample_rate as i32, &vec![0f32; sample_rate as usize]);
     while recognizer.is_ready(asr) {
         recognizer.decode(asr);
     }
@@ -408,7 +410,6 @@ fn run_session(
     } else {
         recognizer.create_stream()
     };
-    prime(&recognizer, &asr);
 
     let host = cpal::default_host();
     let device = options
@@ -421,6 +422,7 @@ fn run_session(
     let (tx, rx) = mpsc::sync_channel::<Vec<f32>>(64);
     let (err_tx, err_rx) = mpsc::channel();
     let (stream, sample_rate) = build_stream(&device, tx, err_tx)?;
+    prime(&recognizer, &asr, sample_rate);
     stream.play().map_err(audio_error)?;
     emit_state("listening");
 
@@ -498,7 +500,7 @@ fn run_session(
                 emit_result(&last_text, true);
             }
             recognizer.reset(&asr);
-            prime(&recognizer, &asr);
+            prime(&recognizer, &asr, sample_rate);
             last_text.clear();
         }
     }
@@ -652,6 +654,22 @@ mod tests {
                 .unwrap();
             }
         }
+    }
+
+    /// sherpa-onnx `_Exit`s the process if one stream is fed two sample rates, so a
+    /// regression here kills the test binary rather than failing an assert.
+    #[test]
+    #[ignore = "needs the speech model: run `npm run fetch:model` first"]
+    fn primes_at_device_rate_across_endpoint_resets() {
+        let dir =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("resources/models/en-us-zipformer-20M");
+        let files = model_files(&dir).expect("speech model not installed");
+        let recognizer = create_recognizer(&files, false).unwrap();
+        let asr = recognizer.create_stream();
+        prime(&recognizer, &asr, 48_000);
+        asr.accept_waveform(48_000, &[0f32; 4_800]);
+        recognizer.reset(&asr);
+        prime(&recognizer, &asr, 48_000);
     }
 
     #[test]
