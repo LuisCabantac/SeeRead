@@ -3,7 +3,10 @@
 - **Questions and ideas:** open a [discussion or issue](https://github.com/clintgalendez/SeeRead/issues)
   using the feature-request template.
 - **Bugs:** use the bug-report template. Include your OS and version, SeeRead version (About page),
-  steps to reproduce, and expected vs. actual behaviour. Don't attach private scripts.
+  steps to reproduce, and expected vs. actual behaviour. Don't attach private scripts. For crashes or
+  anything hard to reproduce, turn on Settings → General → Write debug logs, make the problem happen
+  again, then attach `seeread.log` (Settings → General → Show log file). It never contains script text,
+  transcripts or audio.
 - **Security issues:** follow [SECURITY.md](SECURITY.md) — never post them publicly.
 
 ## Common problems

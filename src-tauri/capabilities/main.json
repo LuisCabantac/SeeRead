@@ -18,6 +18,7 @@
     "core:window:allow-primary-monitor",
     "core:window:allow-is-visible",
     "store:default",
+    "log:default",
     "dialog:allow-open",
     "dialog:allow-save",
     "dialog:allow-ask",

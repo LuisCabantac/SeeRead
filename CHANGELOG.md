@@ -6,6 +6,11 @@ All notable changes to SeeRead are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Opt-in debug logs (Settings → General → Troubleshooting) that record app events, errors and crashes
+  to a local file for bug reports, never script text, transcripts or audio (#3).
+
 ### Fixed
 
 - The microphone test and voice tracking no longer close SeeRead a few seconds after starting when

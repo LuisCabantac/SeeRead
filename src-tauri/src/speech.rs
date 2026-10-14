@@ -214,12 +214,15 @@ pub async fn start_speech(
         .spawn(move || {
             let result = run_session(&app, &options, &files, &worker_stop);
             let event = match result {
-                Ok(()) => StateEvent {
-                    session,
-                    status: "stopped",
-                    code: None,
-                    message: None,
-                },
+                Ok(()) => {
+                    log::info!("speech session {session} stopped");
+                    StateEvent {
+                        session,
+                        status: "stopped",
+                        code: None,
+                        message: None,
+                    }
+                }
                 Err(e) => StateEvent {
                     session,
                     status: "error",
@@ -333,6 +336,13 @@ fn build_stream(
     let channels = supported.channels().max(1) as usize;
     let format = supported.sample_format();
     let config = supported.config();
+    log::info!(
+        "microphone {:?}: {sample_rate} Hz, {channels} ch, {format:?}",
+        device
+            .description()
+            .map(|d| d.name().to_string())
+            .unwrap_or_default()
+    );
 
     fn downmix<T: Copy>(data: &[T], channels: usize, to_f32: impl Fn(T) -> f32) -> Vec<f32> {
         data.chunks(channels)
@@ -404,6 +414,13 @@ fn run_session(
     emit_state("loading");
 
     let hotwords = hotword_text(&options.hotwords);
+    log::info!(
+        "speech session {session}: model {:?}, {} hotwords",
+        Path::new(&options.model_dir)
+            .file_name()
+            .unwrap_or_default(),
+        hotwords.lines().count()
+    );
     let recognizer = create_recognizer(files, !hotwords.is_empty())?;
     let asr = if files.bpe_vocab.is_some() && !hotwords.is_empty() {
         recognizer.create_stream_with_hotwords(&hotwords)
@@ -451,6 +468,7 @@ fn run_session(
             if !matches!(err.kind(), Xrun | RealtimeDenied) {
                 return Err(audio_error(err));
             }
+            log::debug!("speech session {session}: ignored audio error: {err}");
         }
         let mut chunk = match rx.recv_timeout(Duration::from_millis(100)) {
             Ok(chunk) => chunk,
@@ -496,6 +514,10 @@ fn run_session(
             last_text = text;
         }
         if recognizer.is_endpoint(&asr) {
+            log::debug!(
+                "speech session {session}: endpoint after {} chars",
+                last_text.chars().count()
+            );
             if !last_text.trim().is_empty() {
                 emit_result(&last_text, true);
             }
