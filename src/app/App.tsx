@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Welcome } from "../features/first-run/Welcome";
 import { ScriptView } from "../features/script-editor/ScriptView";
 import { useScriptDocument } from "../features/script-editor/useScriptDocument";
 import { SettingsView } from "../features/settings/SettingsView";
+import { inTauri } from "../services/env";
+import { setDebugLogging } from "../services/log";
 import { updateSettings } from "../services/settings-store";
 import { About } from "./About";
 import { PlaybackBar } from "./PlaybackBar";
@@ -15,6 +17,9 @@ type View = "script" | "settings" | "about";
 export function App() {
   const { settings, loaded } = useSettings();
   useTheme(settings);
+  useEffect(() => {
+    if (inTauri && loaded) void setDebugLogging(settings.debugLogs);
+  }, [loaded, settings.debugLogs]);
   if (!loaded) return <p className="welcome muted">Loading…</p>;
   return <Shell settings={settings} />;
 }

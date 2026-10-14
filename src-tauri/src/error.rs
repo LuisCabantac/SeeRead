@@ -10,10 +10,9 @@ pub struct CmdError {
 
 impl CmdError {
     pub fn new(code: &'static str, message: impl Into<String>) -> Self {
-        Self {
-            code,
-            message: message.into(),
-        }
+        let message = message.into();
+        log::warn!("{code}: {message}");
+        Self { code, message }
     }
 }
 

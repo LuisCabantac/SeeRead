@@ -48,8 +48,18 @@ SeeRead; protect sensitive scripts with your operating system's disk encryption.
 
 ## Logs
 
-SeeRead does not write log files. Error messages shown in the app never include script text or
-transcripts.
+Debug logs are **off by default**. When you turn on Settings → General → Write debug logs, SeeRead
+writes app events and errors to `seeread.log` in its log folder: `%LOCALAPPDATA%pp.seeread.SeeRead\logs`
+on Windows, `~/Library/Logs/app.seeread.SeeRead` on macOS and `~/.local/share/app.seeread.SeeRead/logs`
+on Linux. While debug logs are off the file stays empty.
+
+Entries include the SeeRead version and OS, microphone names and formats, speech model folder names,
+error messages (which can contain file paths) and crash reports. They never include script text,
+transcripts or audio, and nothing is sent anywhere: the file only leaves your computer if you attach it
+to a bug report. The log is capped at about 1 MB, with up to two older logs kept; "Show log file" opens
+the folder and you can delete it at any time.
+
+Error messages shown in the app never include script text or transcripts.
 
 ## Removing your data
 
