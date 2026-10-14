@@ -1,0 +1,86 @@
+name: Maintenance
+
+on:
+  schedule:
+    - cron: "41 5 * * 1"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["**/*.md", "docs/**"]
+
+permissions: {}
+
+concurrency:
+  group: maintenance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  links:
+    name: Documentation links
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          args: >-
+            --no-progress --include-fragments --exclude-path node_modules
+            --exclude '^https://github\.com/clintgalendez/SeeRead/(releases|compare|security|actions)'
+            --exclude '^http://localhost' './**/*.md'
+          fail: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  dependencies:
+    name: Dependency health
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - name: Lockfile is consistent (npm ci fails otherwise)
+        run: npm ci
+      - name: npm audit (all dependencies)
+        run: npm audit --audit-level=high
+      - name: Install the pinned Rust toolchain
+        working-directory: src-tauri
+        run: rustup toolchain install
+      - name: Cargo.lock is consistent
+        working-directory: src-tauri
+        run: cargo metadata --locked --format-version 1 > /dev/null
+      - name: New RustSec advisories
+        uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
+        with:
+          manifest-path: src-tauri/Cargo.toml
+          command: check advisories
+
+  licenses:
+    name: License inventory
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - run: npm ci
+      - name: Install the pinned Rust toolchain
+        working-directory: src-tauri
+        run: rustup toolchain install
+      - run: node scripts/license-inventory.mjs third-party-licenses.txt
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: third-party-licenses
+          path: third-party-licenses.txt
+          retention-days: 30

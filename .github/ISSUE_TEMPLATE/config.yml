@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/clintgalendez/SeeRead/security/advisories/new
+    about: Please report security issues privately, never in a public issue.
+  - name: Help and common problems
+    url: https://github.com/clintgalendez/SeeRead/blob/main/SUPPORT.md
+    about: Check the support guide for microphone, model and overlay problems.

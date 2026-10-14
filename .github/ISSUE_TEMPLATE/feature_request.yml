@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest an idea or improvement.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the situation (recording, presenting, rehearsing...) and what gets in the way.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like SeeRead to do?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy
+      options:
+        - label: This idea works without sending scripts or audio off the device (or I explain why it can't).

@@ -1,0 +1,78 @@
+name: Bug report
+description: Something in SeeRead doesn't work as expected.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please don't paste private scripts — a short made-up example is enough.
+        Security problems go to the private advisory form instead (see the links on the previous page).
+  - type: input
+    id: version
+    attributes:
+      label: SeeRead version
+      description: Shown on the About page.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        [
+          Windows 11,
+          Windows 10,
+          macOS (Apple silicon),
+          macOS (Intel),
+          Linux (X11),
+          Linux (Wayland),
+          Other,
+        ]
+    validations:
+      required: true
+  - type: input
+    id: os-version
+    attributes:
+      label: OS version and desktop environment
+      placeholder: "Windows 11 24H2 / macOS 15.4 / Ubuntu 24.04 GNOME"
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        [
+          Teleprompter overlay,
+          Automatic scrolling,
+          Voice tracking,
+          Stage directions,
+          Script editor,
+          Settings,
+          Shortcuts,
+          Screen-capture exclusion,
+          Installation,
+          Other,
+        ]
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Paste this script: ...
+        2. Switch to Voice and press Start
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, microphone model, display setup (number of monitors, scaling), error messages.

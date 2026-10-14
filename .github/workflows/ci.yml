@@ -1,0 +1,221 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_call:
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  web:
+    name: Web (format, lint, types, tests, build)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Unit and integration tests (incl. recorded speech fixtures and performance budgets)
+        run: npm run test:coverage
+      - run: npm run build
+      - name: Upload test reports
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: web-test-reports
+          path: |
+            reports/
+            coverage/
+          retention-days: 14
+          if-no-files-found: ignore
+
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Upload Playwright report
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+
+  rust:
+    name: Rust (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libxdo-dev \
+            libssl-dev libayatana-appindicator3-dev librsvg2-dev libasound2-dev
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Install the pinned Rust toolchain
+        working-directory: src-tauri
+        run: rustup toolchain install
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: src-tauri -> target
+      - name: Build the web UI (embedded by the Rust build)
+        run: npm run build
+      - name: rustfmt
+        if: runner.os == 'Linux'
+        working-directory: src-tauri
+        run: cargo fmt --check
+      - name: clippy
+        working-directory: src-tauri
+        run: cargo clippy --locked --all-targets -- -D warnings
+      - name: Rust tests
+        working-directory: src-tauri
+        run: cargo test --locked
+      - name: Build the desktop app
+        run: npm run tauri -- build --debug --no-bundle -- --locked
+
+  speech:
+    name: Speech recognition (recorded audio)
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Linux system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libxdo-dev \
+            libssl-dev libayatana-appindicator3-dev librsvg2-dev libasound2-dev
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - name: Cache the model archive (verified by checksum after restore)
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/*.tar.bz2
+          key: speech-model-${{ hashFiles('scripts/fetch-model.mjs') }}
+      - name: Fetch and verify the speech model
+        run: node scripts/fetch-model.mjs
+      - name: Install the pinned Rust toolchain
+        working-directory: src-tauri
+        run: rustup toolchain install
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: src-tauri -> target
+      - name: Recognize recorded speech
+        working-directory: src-tauri
+        run: cargo test --locked recognizes_recorded_speech -- --ignored --nocapture
+
+  audit:
+    name: Dependency and license audit
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: npm audit (production dependencies)
+        run: npm audit --omit=dev --audit-level=high
+      - name: npm license allow-list
+        run: npm run licenses:check
+      - name: cargo deny (advisories, licenses, bans, sources)
+        uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
+        with:
+          manifest-path: src-tauri/Cargo.toml
+          command: check
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install gitleaks (checksum verified)
+        env:
+          VERSION: 8.30.1
+          SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+        run: |
+          curl -sSfL -o gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}/gitleaks_${VERSION}_linux_x64.tar.gz"
+          echo "${SHA256}  gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf gitleaks.tar.gz gitleaks
+      - name: Scan the full history
+        run: ./gitleaks git --redact --no-banner --verbose .
+
+  workflows:
+    name: Workflow lint
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: actionlint (checksum verified)
+        env:
+          VERSION: 1.7.12
+          SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+        run: |
+          curl -sSfL -o actionlint.tar.gz \
+            "https://github.com/rhysd/actionlint/releases/download/v${VERSION}/actionlint_${VERSION}_linux_amd64.tar.gz"
+          echo "${SHA256}  actionlint.tar.gz" | sha256sum -c -
+          tar -xzf actionlint.tar.gz actionlint
+          ./actionlint -color
+      - name: zizmor (GitHub Actions security audit)
+        run: pipx run zizmor==1.30.1 --offline --min-severity medium .github/workflows
