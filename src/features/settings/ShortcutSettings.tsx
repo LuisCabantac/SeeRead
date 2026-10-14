@@ -69,8 +69,8 @@ export function ShortcutSettings({
       ) : (
         <p className="notice warn" role="status">
           Your desktop runs Wayland, which doesn’t let apps listen for keys system-wide, so these
-          shortcuts won’t fire. Use the keys below while the teleprompter has focus, or the SeeRead
-          tray menu.
+          shortcuts won’t fire. Use the keys under “In the teleprompter window” while it has focus,
+          or the SeeRead tray menu.
         </p>
       )}
       {warning && (
