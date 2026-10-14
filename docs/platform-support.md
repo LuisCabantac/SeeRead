@@ -56,6 +56,19 @@ SeeRead treats the session as Wayland when GTK would use it: the first entry of 
 else whenever `WAYLAND_DISPLAY` is set. Launching with `GDK_BACKEND=x11` runs SeeRead through
 XWayland, where window placement, always-on-top and global shortcuts follow X11 rules.
 
+### KDE Plasma on Wayland
+
+Verified 2026-10-14 on Arch Linux with KDE Plasma 6.7.5 (Wayland session), using `npm run tauri dev`.
+
+| Capability                         | Result | How it was checked                                                                                         |
+| ---------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------- |
+| Wayland detected, limits explained | ✅     | Settings showed the Wayland notes; with `GDK_BACKEND=x11` the display picker returned and the notes didn't |
+| Overlay size restored              | ✅     | Resized, hidden and shown again: same size. _Reset size_ restored the default                              |
+| Dragging by the ⠿ handle           | ✅     | The compositor moved the window                                                                            |
+| Keep above other windows           | 🟠     | Not by SeeRead itself; Alt+F3 → More Actions → Keep Above Others kept it above other windows               |
+| Click-through                      | ✅     | Clicks reached the window behind; the tray's _Toggle click-through_ restored control                       |
+| Global shortcuts                   | ⛔     | Not available to apps on Wayland; Settings says so                                                         |
+
 ## Reproducing the Windows checks
 
 The UI Automation scripts used above are not part of the repository (they depend on the local desktop).
