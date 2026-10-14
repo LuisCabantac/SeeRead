@@ -1,0 +1,7 @@
+# sherpa-onnx ships its Windows static libraries built against the static CRT (/MT).
+# Linking the whole binary with the static CRT avoids a mixed-runtime (LNK4098) build.
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]
+
+[target.aarch64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]
