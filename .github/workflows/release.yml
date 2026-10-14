@@ -2,10 +2,13 @@ name: Release
 
 # Builds installers for a pushed version tag and creates a DRAFT GitHub Release.
 # A maintainer reviews and publishes the draft by hand. See docs/releasing/RELEASING.md.
+# Running it manually (workflow_dispatch) is a dry run: installers are built and kept as
+# workflow artifacts, and no release is created.
 
 on:
   push:
     tags: ["v*.*.*"]
+  workflow_dispatch:
 
 permissions: {}
 
@@ -32,8 +35,11 @@ jobs:
           package-manager-cache: false
       - name: Tag matches versions and changelog
         env:
-          TAG: ${{ github.ref_name }}
-        run: node scripts/check-version.mjs "$TAG"
+          TAG: ${{ github.event_name == 'push' && github.ref_name || '' }}
+        run: |
+          # A dry run checks the version currently in package.json.
+          if [ -z "$TAG" ]; then TAG="v$(node -p 'require("./package.json").version')"; fi
+          node scripts/check-version.mjs "$TAG"
 
   ci:
     name: CI
@@ -169,6 +175,7 @@ jobs:
   publish:
     name: Create draft release
     needs: build
+    if: github.event_name == 'push'
     runs-on: ubuntu-24.04
     environment: release
     permissions:

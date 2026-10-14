@@ -14,6 +14,13 @@ must match the tag (the release workflow checks this):
 
 Pre-releases use a suffix such as `0.2.0-rc.1` and are marked as pre-releases.
 
+## Dry run
+
+Actions → **Release** → **Run workflow** runs the whole pipeline (version check, CI, installer builds
+on all three platforms) for the version currently in `package.json`, and keeps the installers as
+workflow artifacts for 7 days. It never creates a release. Use it before tagging to catch packaging
+problems.
+
 ## Steps
 
 1. Make sure `main` is green in CI.
