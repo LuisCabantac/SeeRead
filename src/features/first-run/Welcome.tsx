@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { displayAccelerator } from "../../core/shortcuts";
+import { useDisplaySession } from "../../app/useDisplaySession";
 import { useSettings } from "../../app/useSettings";
 import { isMac } from "../../services/env";
 import { MicTest } from "../voice-tracking/MicTest";
@@ -16,6 +17,7 @@ const CAPTURE_NOTE = {
 
 export function Welcome({ onDone }: { onDone(): void }) {
   const { settings } = useSettings();
+  const session = useDisplaySession();
   const [step, setStep] = useState(0);
   const steps = 3;
 
@@ -78,9 +80,15 @@ export function Welcome({ onDone }: { onDone(): void }) {
           </p>
           <p>
             <strong>Click-through</strong> lets clicks pass to the window behind the teleprompter.
-            To get control back, press{" "}
-            <kbd>{displayAccelerator(settings.shortcuts.toggleClickThrough, isMac)}</kbd> or use the
-            SeeRead tray menu.
+            To get control back,{" "}
+            {session.globalShortcuts ? (
+              <>
+                press <kbd>{displayAccelerator(settings.shortcuts.toggleClickThrough, isMac)}</kbd>{" "}
+                or use the SeeRead tray menu.
+              </>
+            ) : (
+              "use the SeeRead tray menu."
+            )}
           </p>
           <p>
             <strong>Screen capture:</strong> {CAPTURE_NOTE[platform]} No method can stop a camera

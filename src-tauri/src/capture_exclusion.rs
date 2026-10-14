@@ -167,7 +167,8 @@ mod platform {
             verified: None,
             method: "none",
             notes: "Neither X11 nor Wayland offers applications a way to exclude a window from \
-                    screen capture. The overlay will appear in recordings and screen shares.",
+                    screen capture. The overlay will appear in recordings and screen shares. \
+                    On Wayland, sharing a single window instead of the whole screen keeps it out.",
         })
     }
 }

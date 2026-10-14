@@ -46,10 +46,15 @@ state read through Win32 APIs.
 | Builds and Rust tests             | 🟡     | CI `Rust (ubuntu-24.04)` job                                                                                                           |
 | Speech engine                     | ✅     | CI `speech` job runs the real-audio test on Ubuntu                                                                                     |
 | Transparent always-on-top overlay | 🟠     | Depends on the compositor (X11 compositors and most Wayland compositors support transparency; always-on-top may be ignored on Wayland) |
+| Overlay position on Wayland       | 🟠     | Wayland compositors place windows and report every position as 0,0; SeeRead detects Wayland and restores only the size                 |
 | Click-through                     | 🟠     | Depends on the window manager/compositor                                                                                               |
 | Global shortcuts                  | 🟠     | Work on X11/XWayland; native Wayland sessions do not allow apps to grab global shortcuts                                               |
-| Screen-capture exclusion          | ⛔     | No mechanism exists on X11 or Wayland                                                                                                  |
+| Screen-capture exclusion          | ⛔     | No mechanism exists on X11 or Wayland. Wayland screen sharing lets the user share one window, which leaves the overlay out             |
 | Everything else                   | 🟡     | Awaiting hands-on validation                                                                                                           |
+
+SeeRead treats the session as Wayland when GTK would use it: the first entry of `GDK_BACKEND`, or
+else whenever `WAYLAND_DISPLAY` is set. Launching with `GDK_BACKEND=x11` runs SeeRead through
+XWayland, where window placement, always-on-top and global shortcuts follow X11 rules.
 
 ## Reproducing the Windows checks
 

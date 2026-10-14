@@ -6,6 +6,11 @@ All notable changes to SeeRead are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- Settings detects Wayland sessions and explains that display choice, always-on-top and global
+  shortcuts are limited there, with KDE Plasma instructions for keeping the teleprompter on top.
+
 ### Fixed
 
 - On Wayland, the teleprompter no longer saves a meaningless 0,0 position; only its size is restored.
