@@ -1,0 +1,134 @@
+/* Teleprompter text, shared by the overlay window and the editor preview.
+   Appearance comes from CSS variables set from the user's settings. */
+.prompter {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: rgb(var(--tp-bg-rgb) / var(--tp-bg-alpha));
+  color: var(--tp-color);
+  border-radius: 10px;
+  user-select: none;
+}
+
+.prompter.bordered {
+  border: 2px solid rgb(255 255 255 / 35%);
+}
+
+.prompter-scroll {
+  height: 100%;
+  overflow: hidden;
+}
+
+.prompter-text {
+  font-family: var(--tp-font);
+  font-size: var(--tp-size);
+  font-weight: var(--tp-weight);
+  line-height: var(--tp-line);
+  text-align: var(--tp-align);
+  /* Top padding puts the first line on the reading guide; bottom padding lets the last
+     line reach it. Both are measured in px from the viewport height by the component. */
+  padding: var(--tp-guide-y) var(--tp-margin) var(--tp-pad-bottom);
+  position: relative;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.prompter.mirror-x .prompter-text {
+  transform: scaleX(-1);
+}
+
+.prompter.mirror-y .prompter-text {
+  transform: scaleY(-1);
+}
+
+.prompter.mirror-x.mirror-y .prompter-text {
+  transform: scale(-1, -1);
+}
+
+.prompter.shadow .prompter-text {
+  text-shadow:
+    0 0 3px rgb(0 0 0 / 90%),
+    0 0 8px rgb(0 0 0 / 70%),
+    0 1px 2px rgb(0 0 0 / 90%);
+}
+
+.prompter-text p {
+  margin: 0 0 0.8em;
+}
+
+.prompter-text .ann {
+  color: var(--tp-ann-color);
+  font-style: var(--tp-ann-style);
+  font-size: 0.8em;
+}
+
+.prompter-text .w {
+  border-radius: 0.15em;
+  cursor: pointer;
+}
+
+.prompter-text .w.read {
+  opacity: var(--tp-read-opacity);
+}
+
+.prompter-text .w.upcoming {
+  opacity: 1;
+}
+
+.prompter.hl-background .w.current {
+  background: color-mix(in srgb, var(--tp-hl) 45%, transparent);
+  box-shadow: 0 0 0 0.08em color-mix(in srgb, var(--tp-hl) 45%, transparent);
+}
+
+.prompter.hl-background .w.upcoming {
+  background: color-mix(in srgb, var(--tp-hl) 14%, transparent);
+}
+
+.prompter.hl-underline .w.current {
+  text-decoration: underline 0.12em var(--tp-hl);
+  text-underline-offset: 0.18em;
+}
+
+.prompter.hl-underline .w.upcoming {
+  text-decoration: underline 0.05em color-mix(in srgb, var(--tp-hl) 60%, transparent);
+  text-underline-offset: 0.18em;
+}
+
+.prompter.hl-color .w.current {
+  color: var(--tp-hl);
+}
+
+.prompter-guide {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: var(--tp-guide-y);
+  height: calc(var(--tp-size) * var(--tp-line));
+  border-top: 2px solid rgb(255 214 10 / 55%);
+  border-bottom: 2px solid rgb(255 214 10 / 25%);
+  background: rgb(255 214 10 / 6%);
+  pointer-events: none;
+}
+
+.prompter-guide::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 8px solid transparent;
+  border-left-color: rgb(255 214 10 / 85%);
+}
+
+.countdown {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: min(40vh, 160px);
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 12px rgb(0 0 0 / 90%);
+  pointer-events: none;
+}

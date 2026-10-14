@@ -1,0 +1,128 @@
+/* The overlay window itself is transparent; only the teleprompter panel is painted. */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: transparent !important;
+  overflow: hidden;
+}
+
+.overlay {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.overlay .prompter {
+  flex: 1;
+  min-height: 0;
+}
+
+.overlay-bar {
+  position: absolute;
+  z-index: 2;
+  top: 6px;
+  left: 6px;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  background: rgb(20 22 28 / 88%);
+  color: #fff;
+  font-size: 13px;
+  transition: opacity 150ms ease;
+}
+
+.overlay-bar button {
+  padding: 3px 9px;
+  background: rgb(255 255 255 / 8%);
+  border-color: rgb(255 255 255 / 20%);
+  color: #fff;
+}
+
+.overlay-bar button:hover:not(:disabled) {
+  background: rgb(255 255 255 / 18%);
+}
+
+.overlay-bar button[aria-pressed="true"] {
+  background: #ffd60a;
+  border-color: #ffd60a;
+  color: #000;
+}
+
+.overlay-bar .pill {
+  border-color: rgb(255 255 255 / 30%);
+}
+
+.overlay-bar .sep {
+  width: 1px;
+  align-self: stretch;
+  background: rgb(255 255 255 / 25%);
+  margin: 0 4px;
+}
+
+.overlay-bar .spacer {
+  flex: 1;
+}
+
+.overlay-bar .speed {
+  min-width: 2.5em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.overlay-bar .drag {
+  cursor: grab;
+  padding: 0 6px;
+  font-size: 18px;
+  user-select: none;
+}
+
+/* While reading, controls fade out until hovered or focused with the keyboard. */
+.overlay.reading .overlay-bar {
+  opacity: 0;
+}
+
+.overlay.reading .overlay-bar:hover,
+.overlay.reading .overlay-bar:focus-within {
+  opacity: 1;
+}
+
+.overlay-error {
+  position: absolute;
+  z-index: 2;
+  bottom: 10px;
+  left: 10px;
+  right: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #5c1010;
+  color: #fff;
+}
+
+.overlay-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 18px;
+  text-shadow: 0 0 6px #000;
+  pointer-events: none;
+}
+
+.resize-grip {
+  position: absolute;
+  z-index: 2;
+  right: 0;
+  bottom: 0;
+  width: 18px;
+  height: 18px;
+  cursor: nwse-resize;
+  background: linear-gradient(135deg, transparent 50%, rgb(255 255 255 / 45%) 50%);
+  border-bottom-right-radius: 10px;
+}
