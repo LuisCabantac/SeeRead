@@ -1,0 +1,23 @@
+node_modules/
+dist/
+coverage/
+reports/
+playwright-report/
+test-results/
+*.log
+*.local
+.env
+.env.*
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Tauri / Cargo
+src-tauri/target/
+src-tauri/gen/
+# Speech model and native assets are fetched by scripts/fetch-model.mjs, never committed.
+src-tauri/resources/models/
+.cache/
+public/third-party-licenses.txt
+third-party-licenses.txt
