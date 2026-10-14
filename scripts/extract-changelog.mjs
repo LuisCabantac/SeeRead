@@ -11,5 +11,9 @@ if (!version || start === -1) {
   process.exit(1);
 }
 const next = changelog.indexOf("\n## [", start + 1);
-const body = changelog.slice(changelog.indexOf("\n", start) + 1, next === -1 ? undefined : next);
+const body = changelog
+  .slice(changelog.indexOf("\n", start) + 1, next === -1 ? undefined : next)
+  .split("\n")
+  .filter((line) => !/^\[[^\]]+\]: https?:\/\//.test(line)) // comparison-link footer
+  .join("\n");
 process.stdout.write(`${body.trim()}\n`);
